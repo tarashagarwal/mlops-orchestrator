@@ -37,9 +37,25 @@ resource "aws_security_group" "ec2_sg" {
   }
 }
 
+# Data source request to AWS
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"] # Canonical's AWS account ID
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-*22.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
 # 🖥️ EC2 instance
 resource "aws_instance" "my_server" {
-  ami                    = "ami-0cfde0ea8edd312d4" # Ubuntu 22.04 in us-east-1
+  ami                    = data.aws_ami.ubuntu.id
   instance_type          = "t3.micro"
   key_name               = aws_key_pair.my_keypair.key_name
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
